@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshChain Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+
+    <style>
+        /* General Aesthetic Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 650px;
+            width: 100%;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        h1 {
+            text-align: center;
+            color: #1e88e5;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+        h3 {
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            color: #333;
+            margin-top: 20px;
+        }
+
+        /* Wallet Info Box */
+        .wallet-info {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 25px;
+            border: 1px solid #bbdefb;
+            display: none;
+        }
+
+        /* Form & Input Styles */
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: #1e88e5;
+            outline: none;
+            box-shadow: 0 0 5px rgba(30, 136, 229, 0.3);
+        }
+
+        /* Button Styles */
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        button:active {
+            transform: scale(0.99);
+        }
+
+        /* Button Colors */
+        .btn-primary { background-color: #4CAF50; color: white; }
+        .btn-primary:hover { background-color: #43a047; }
+
+        .btn-blue { background-color: #2196F3; color: white; }
+        .btn-blue:hover { background-color: #1e88e5; }
+
+        .btn-red { background-color: #f44336; color: white; }
+        .btn-red:hover { background-color: #e53935; }
+
+        .btn-logout { background-color: #9e9e9e; margin-top: 30px; }
+        .btn-logout:hover { background-color: #757575; }
+
+        /* Panel & Layout */
+        .panel { display: none; }
+        .active-panel { display: block; animation: fadeIn 0.5s; }
+        .flex-row { display: flex; gap: 10px; margin-top: 15px; }
+        .flex-row button { width: 50%; margin: 0; }
+
+        /* Status Messages */
+        .status-box { background: #e8f5e9; color: #2e7d32; padding: 12px; margin-top: 15px; border-radius: 8px; display: none; font-weight: 500;}
+        .error-box { background: #ffebee; color: #c62828; padding: 12px; margin-top: 15px; border-radius: 8px; display: none; font-weight: 500;}
+
+        /* History View */
+        .history-summary { background:#e3f2fd; padding:15px; border-radius:8px; text-align:left; margin-bottom: 20px; border-left: 5px solid #1e88e5; }
+        .history-item { background:#f9f9f9; border:1px solid #eee; padding:10px; margin-bottom:5px; border-radius: 5px; text-align:left; font-size: 0.95em; }
+
+        /* Dynamic QR Code Area */
+        .qr-output-area {
+            text-align: center;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .qr-placeholder {
+            min-height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            color: #757575;
+            margin-top: 10px;
+            font-style: italic;
+        }
+        .qr-output-area canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>FreshChain Traceability System</h1>
+
+    <div id="connect-section" style="text-align: center; padding: 30px 10px;">
+        <p style="color:#666; margin-bottom: 25px;">Please connect your wallet to access the system.</p>
+        <button class="btn-blue" onclick="connectWallet()">Connect Wallet</button>
+    </div>
+
+    <div id="wallet-display" class="wallet-info"></div>
+
+    <div id="login-panel" class="panel">
+        <h3>User Login</h3>
+        <label>Select User Role:</label>
+        <select id="login-type">
+            <option value="admin">Admin</option>
+            <option value="producer">Producer (Farmer)</option>
+            <option value="transporter">Transporter</option>
+            <option value="distributor">Distributor</option>
+            <option value="retailer">Retailer (Shop)</option>
+            <option value="customer">Customer</option>
+        </select>
+
+        <div id="password-field">
+            <input type="password" id="login-pass" placeholder="Password (Demo: 123)">
+        </div>
+
+        <button class="btn-primary" onclick="handleLogin()">Login</button>
+    </div>
+
+    <div id="admin-panel" class="panel">
+        <h3>Admin Panel: Actor Registration</h3>
+        <input type="text" id="admin-addr" placeholder="New Wallet Address (0x...)">
+        <select id="admin-role">
+            <option value="producer">Producer</option>
+            <option value="transporter">Transporter</option>
+            <option value="distributor">Distributor</option>
+            <option value="retailer">Retailer</option>
+        </select>
+        <button class="btn-primary" onclick="registerActor()">Register Actor</button>
+    </div>
+
+    <div id="producer-panel" class="panel">
+        <h3>Producer Panel: Batch Creation</h3>
+        <input type="number" id="prod-id" placeholder="Batch ID (e.g., 101)">
+        <input type="text" id="prod-name" placeholder="Product Name (e.g., Tomatoes)">
+        <input type="number" id="prod-qty" placeholder="Quantity (kg)">
+        <button class="btn-primary" onclick="createBatch()">Create Batch</button>
+
+        <hr>
+        <h4>Transfer Ownership</h4>
+        <input type="number" id="prod-transfer-id" placeholder="Batch ID">
+        <input type="text" id="prod-new-owner" placeholder="Next Owner Address (0x...)">
+        <button class="btn-blue" onclick="transferOwnership('prod')">Transfer</button>
+    </div>
+
+    <div id="transporter-panel" class="panel">
+        <h3>Transporter Panel: Data Logging</h3>
+        <input type="number" id="trans-id" placeholder="Batch ID">
+        <input type="number" id="trans-temp" placeholder="Temperature (-10 to 40)">
+        <input type="number" id="trans-humid" placeholder="Humidity (0 to 40)">
+        <input type="text" id="trans-loc" placeholder="Location (e.g., London)">
+        <button class="btn-primary" onclick="addSensorData()">Record Data</button>
+
+        <hr>
+        <h4>Transfer Ownership</h4>
+        <input type="number" id="trans-transfer-id" placeholder="Batch ID">
+        <input type="text" id="trans-new-owner" placeholder="Next Owner Address (0x...)">
+        <button class="btn-blue" onclick="transferOwnership('trans')">Transfer</button>
+    </div>
+
+    <div id="distributor-panel" class="panel">
+        <h3>Distributor Panel: Ownership Transfer</h3>
+        <input type="number" id="dist-transfer-id" placeholder="Batch ID">
+        <input type="text" id="dist-new-owner" placeholder="Next Owner Address (0x...)">
+        <button class="btn-blue" onclick="transferOwnership('dist')">Transfer</button>
+    </div>
+
+    <div id="retailer-panel" class="panel">
+        <h3>Retailer Panel: Final Inspection</h3>
+        <input type="number" id="ret-id" placeholder="Batch ID">
+        <div class="flex-row">
+            <button class="btn-blue" onclick="markArrived(true)">✅ Pass Inspection</button>
+            <button class="btn-red" onclick="markArrived(false)">❌ Fail Inspection</button>
+        </div>
+    </div>
+
+    <div id="customer-panel" class="panel">
+        <h3>Customer Traceability</h3>
+
+        <div class="qr-output-area">
+            <h4>Scan Simulation QR Code</h4>
+            <div id="qr-placeholder" class="qr-placeholder">
+                Enter Batch ID...
+            </div>
+        </div>
+
+        <input type="number" id="cust-id" placeholder="Enter Batch ID" oninput="generateQrCode()">
+        <button class="btn-primary" onclick="getBatchHistory()">Search History</button>
+
+        <div id="history-result" style="margin-top: 25px;"></div>
+    </div>
+
+    <div id="logout-section" style="display:none;">
+        <button class="btn-logout" onclick="logout()">Logout / Reset</button>
+    </div>
+
+    <div id="status-msg" class="status-box"></div>
+    <div id="error-msg" class="error-box"></div>
+
+</div>
+
+<script>
+    // --- CONFIGURATION ---
+    // --- CONFIGURATION ---
+    const CONTRACT_ADDRESS = "0xFdF50be72B1c4bACE277bF06964D588206fcbC4e";
+
+    // ABI (Smart Contract Interface)
+    const ABI = [
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_batchId",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "int256",
+                    "name": "_temperature",
+                    "type": "int256"
+                },
+                {
+                    "internalType": "int256",
+                    "name": "_humidity",
+                    "type": "int256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_location",
+                    "type": "string"
+                }
+            ],
+            "name": "addSensorData",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "uint256",
+                    "name": "batchId",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "bool",
+                    "name": "passedInspection",
+                    "type": "bool"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "retailer",
+                    "type": "address"
+                }
+            ],
+            "name": "BatchArrived",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "uint256",
+                    "name": "batchId",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "string",
+                    "name": "productName",
+                    "type": "string"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "producer",
+                    "type": "address"
+                }
+            ],
+            "name": "BatchCreated",
+            "type": "event"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_batchId",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_productName",
+                    "type": "string"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_quantity",
+                    "type": "uint256"
+                }
+            ],
+            "name": "createBatch",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_batchId",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "_passedInspection",
+                    "type": "bool"
+                }
+            ],
+            "name": "markAsArrived",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "uint256",
+                    "name": "batchId",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "previousOwner",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "newOwner",
+                    "type": "address"
+                }
+            ],
+            "name": "OwnershipTransferred",
+            "type": "event"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_distributor",
+                    "type": "address"
+                }
+            ],
+            "name": "registerDistributor",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_producer",
+                    "type": "address"
+                }
+            ],
+            "name": "registerProducer",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_retailer",
+                    "type": "address"
+                }
+            ],
+            "name": "registerRetailer",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_transporter",
+                    "type": "address"
+                }
+            ],
+            "name": "registerTransporter",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "uint256",
+                    "name": "batchId",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "int256",
+                    "name": "temperature",
+                    "type": "int256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "int256",
+                    "name": "humidity",
+                    "type": "int256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "string",
+                    "name": "location",
+                    "type": "string"
+                }
+            ],
+            "name": "SensorDataAdded",
+            "type": "event"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_batchId",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "address",
+                    "name": "_newOwner",
+                    "type": "address"
+                }
+            ],
+            "name": "transferOwnership",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "name": "batches",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "batchId",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "productName",
+                    "type": "string"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "quantity",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "address",
+                    "name": "currentOwner",
+                    "type": "address"
+                },
+                {
+                    "internalType": "address",
+                    "name": "producer",
+                    "type": "address"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "isArrived",
+                    "type": "bool"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "passedInspection",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "name": "batchExists",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "name": "distributors",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_batchId",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getBatchHistory",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "productName",
+                    "type": "string"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "quantity",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "address",
+                    "name": "producer",
+                    "type": "address"
+                },
+                {
+                    "internalType": "address",
+                    "name": "currentOwner",
+                    "type": "address"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "isArrived",
+                    "type": "bool"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "passedInspection",
+                    "type": "bool"
+                },
+                {
+                    "components": [
+                        {
+                            "internalType": "uint256",
+                            "name": "timestamp",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "int256",
+                            "name": "temperature",
+                            "type": "int256"
+                        },
+                        {
+                            "internalType": "int256",
+                            "name": "humidity",
+                            "type": "int256"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "location",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "recordedBy",
+                            "type": "address"
+                        }
+                    ],
+                    "internalType": "struct FreshChain.SensorLog[]",
+                    "name": "logs",
+                    "type": "tuple[]"
+                },
+                {
+                    "internalType": "address[]",
+                    "name": "owners",
+                    "type": "address[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "owner",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "name": "producers",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "name": "retailers",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "name": "transporters",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ];
+
+    // Variables
+    let provider, signer, contract;
+    let connectedAddress = "";
+
+    // Dynamic QR Code Generation
+    function generateQrCode() {
+        const batchId = document.getElementById('cust-id').value;
+        const qrContainer = document.getElementById('qr-placeholder');
+
+        qrContainer.innerHTML = '';
+
+        if (batchId && batchId.length > 0) {
+            // Data embedded in QR: Current URL + ?batchid=ID
+            const dataToEmbed = window.location.href.split('?')[0] + "?batchid=" + batchId;
+
+            const canvas = document.createElement('canvas');
+            qrContainer.appendChild(canvas);
+
+            new QRious({
+                element: canvas,
+                value: dataToEmbed,
+                size: 150,
+                padding: 10
+            });
+
+        } else {
+            qrContainer.innerHTML = 'Enter Batch ID...';
+        }
+    }
+
+    // URL Parameter Reading (QR Scan Simulation)
+    function getBatchIdFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('batchid');
+    }
+
+    // Handles redirection if a QR code link is opened
+    function handleQrCodeScanRedirect() {
+        const batchId = getBatchIdFromUrl();
+        if (batchId) {
+            document.getElementById("connect-section").style.display = "none";
+            showPanel("customer-panel");
+
+            const custIdInput = document.getElementById('cust-id');
+            if(custIdInput) custIdInput.value = batchId;
+
+            // Generate QR code based on the scanned ID and immediately query the data
+            generateQrCode();
+            setTimeout(() => {
+                getBatchHistory();
+            }, 500);
+
+            document.getElementById("logout-section").style.display = "block";
+            return true;
+        }
+        return false;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!handleQrCodeScanRedirect()) {
+            document.getElementById("connect-section").style.display = "block";
+        }
+    });
+
+    // 1. CONNECT WALLET FUNCTION
+    async function connectWallet() {
+        if (window.ethereum) {
+            try {
+                provider = new ethers.BrowserProvider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                signer = await provider.getSigner();
+                contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+                connectedAddress = await signer.getAddress();
+
+                document.getElementById("connect-section").style.display = "none";
+                const walletDisplay = document.getElementById("wallet-display");
+                walletDisplay.innerText = "🟢 Connected Wallet: " + connectedAddress.substring(0, 6) + "..." + connectedAddress.slice(-4);
+                walletDisplay.style.display = "block";
+
+                showPanel("login-panel");
+
+            } catch (error) {
+                console.error(error);
+                alert("Connection rejected or error occurred.");
+            }
+        } else {
+            alert("Please install MetaMask!");
+        }
+    }
+
+    // --- OTHER UI FUNCTIONS ---
+
+    function showPanel(panelId) {
+        document.querySelectorAll('.panel').forEach(el => el.classList.remove('active-panel'));
+        const p = document.getElementById(panelId);
+        if(p) p.classList.add('active-panel');
+
+        document.getElementById("status-msg").style.display = "none";
+        document.getElementById("error-msg").style.display = "none";
+    }
+
+    function handleLogin() {
+        const type = document.getElementById("login-type").value;
+        const pass = document.getElementById("login-pass").value;
+
+        if (type === "customer") {
+            showPanel("customer-panel");
+            document.getElementById("logout-section").style.display = "block";
+            return;
+        }
+
+        if (pass === "123") {
+            showPanel(type + "-panel");
+            document.getElementById("logout-section").style.display = "block";
+        } else {
+            alert("Incorrect Password!");
+        }
+    }
+
+    function logout() {
+        // Reloads the page without the batchid parameter
+        const cleanUrl = window.location.href.split('?')[0];
+        window.location.href = cleanUrl;
+    }
+
+    function showStatus(msg) {
+        const el = document.getElementById("status-msg");
+        el.innerText = msg;
+        el.style.display = "block";
+        document.getElementById("error-msg").style.display = "none";
+    }
+
+    function showError(msg) {
+        const el = document.getElementById("error-msg");
+        el.innerText = "Error: " + msg;
+        el.style.display = "block";
+        document.getElementById("status-msg").style.display = "none";
+    }
+
+    // --- SMART CONTRACT INTERACTIONS ---
+
+    async function registerActor() {
+        if(!contract) return showError("Please connect your wallet first.");
+        const addr = document.getElementById("admin-addr").value;
+        const role = document.getElementById("admin-role").value;
+
+        try {
+            showStatus("Waiting for confirmation...");
+            let tx;
+            if(role === "producer") tx = await contract.registerProducer(addr);
+            else if(role === "transporter") tx = await contract.registerTransporter(addr);
+            else if(role === "distributor") tx = await contract.registerDistributor(addr);
+            else if(role === "retailer") tx = await contract.registerRetailer(addr);
+
+            await tx.wait();
+            showStatus("Success! " + addr.substring(0, 6) + "... registered as " + role);
+        } catch (err) {
+            showError(err.reason || err.message);
+        }
+    }
+
+    async function createBatch() {
+        if(!contract) return showError("Please connect your wallet first.");
+        const id = document.getElementById("prod-id").value;
+        const name = document.getElementById("prod-name").value;
+        const qty = document.getElementById("prod-qty").value;
+
+        try {
+            showStatus("Creating Batch...");
+            const tx = await contract.createBatch(id, name, qty);
+            await tx.wait();
+            showStatus("Batch #" + id + " Created Successfully!");
+        } catch (err) {
+            showError(err.reason || err.message);
+        }
+    }
+
+    async function addSensorData() {
+        if(!contract) return showError("Please connect your wallet first.");
+        const id = document.getElementById("trans-id").value;
+        const temp = document.getElementById("trans-temp").value;
+        const humid = document.getElementById("trans-humid").value;
+        const loc = document.getElementById("trans-loc").value;
+
+        if(parseInt(temp) < -10 || parseInt(temp) > 40) return showError("Temperature Error (Must be -10 to 40)");
+        if(parseInt(humid) < 0 || parseInt(humid) > 40) return showError("Humidity Error (Must be 0 to 40)");
+
+        try {
+            showStatus("Recording Data...");
+            const tx = await contract.addSensorData(id, temp, humid, loc);
+            await tx.wait();
+            showStatus("Data recorded for Batch #" + id);
+        } catch (err) {
+            showError(err.reason || err.message);
+        }
+    }
+
+    async function transferOwnership(prefix) {
+        if(!contract) return showError("Please connect your wallet first.");
+        const id = document.getElementById(prefix + "-transfer-id").value;
+        const newOwner = document.getElementById(prefix + "-new-owner").value;
+
+        try {
+            showStatus("Transferring Ownership...");
+            const tx = await contract.transferOwnership(id, newOwner);
+            await tx.wait();
+            showStatus("Ownership transferred to: " + newOwner.substring(0, 6) + "...");
+        } catch (err) {
+            showError(err.reason || err.message);
+        }
+    }
+
+    async function markArrived(passed) {
+        if(!contract) return showError("Please connect your wallet first.");
+        const id = document.getElementById("ret-id").value;
+        try {
+            showStatus("Processing inspection...");
+            const tx = await contract.markAsArrived(id, passed);
+            await tx.wait();
+            showStatus("Inspection Complete. Result: " + (passed ? "PASSED" : "FAILED"));
+        } catch (err) {
+            showError(err.reason || err.message);
+        }
+    }
+
+    async function getBatchHistory() {
+        const id = document.getElementById("cust-id").value;
+        const displayDiv = document.getElementById("history-result");
+        displayDiv.innerHTML = "Loading...";
+
+        if (!provider) {
+            if (window.ethereum) {
+                provider = new ethers.BrowserProvider(window.ethereum);
+            } else {
+                displayDiv.innerHTML = "<p style='color:red'>Could not initialize Ethers.js for reading data.</p>";
+                return;
+            }
+        }
+
+        // Use a read-only contract instance
+        const readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+
+        try {
+            const data = await readOnlyContract.getBatchHistory(id);
+
+            let html = `
+                <div class="history-summary">
+                    <p><strong>Product:</strong> ${data[0]}</p>
+                    <p><strong>Quantity:</strong> ${data[1]} kg</p>
+                    <p><strong>Producer:</strong> ${data[2].substring(0, 6)}...</p>
+                    <p><strong>Status:</strong> ${data[4] ? (data[5] ? "✅ Inspection PASSED" : "❌ Inspection FAILED") : "🚚 In Transit"}</p>
+                </div>
+                <h4 style="text-align:left;">Sensor History:</h4>
+            `;
+
+            if(data[6].length === 0) {
+                html += "<p>No sensor data recorded yet.</p>";
+            } else {
+                data[6].forEach(log => {
+                    html += `
+                        <div class="history-item">
+                            <strong>${log.location}</strong> (${new Date(Number(log.timestamp) * 1000).toLocaleDateString()} ${new Date(Number(log.timestamp) * 1000).toLocaleTimeString()})<br>
+                            Temp: ${log.temperature}°C | Humidity: ${log.humidity}%
+                        </div>
+                    `;
+                });
+            }
+            displayDiv.innerHTML = html;
+        } catch (err) {
+            console.error(err);
+            displayDiv.innerHTML = "<p style='color:red'>Batch not found or error fetching data.</p>";
+        }
+    }
+
+</script>
+
+</body>
+</html>
