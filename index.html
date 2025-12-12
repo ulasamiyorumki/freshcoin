@@ -3,66 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FreshChain Dashboard</title>
+    <title>FreshChain Dashboard | Dynamic QR</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <style>
         /* General Aesthetic Styles */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            padding: 40px;
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); 
+            padding: 40px; 
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
         }
-        .container {
-            max-width: 650px;
+        .container { 
+            max-width: 650px; 
             width: 100%;
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            background: #ffffff; 
+            padding: 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); 
         }
-        h1 {
-            text-align: center;
-            color: #1e88e5;
-            margin-bottom: 25px;
+        h1 { 
+            text-align: center; 
+            color: #1e88e5; 
+            margin-bottom: 25px; 
             font-weight: 700;
         }
-        h3 {
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 10px;
-            color: #333;
+        h3 { 
+            border-bottom: 2px solid #e0e0e0; 
+            padding-bottom: 10px; 
+            color: #333; 
             margin-top: 20px;
         }
-
+        
         /* Wallet Info Box */
-        .wallet-info {
-            background-color: #e3f2fd;
-            color: #1565c0;
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: 600;
+        .wallet-info { 
+            background-color: #e3f2fd; 
+            color: #1565c0; 
+            padding: 12px; 
+            border-radius: 8px; 
+            text-align: center; 
+            font-weight: 600; 
             margin-bottom: 25px;
             border: 1px solid #bbdefb;
-            display: none;
+            display: none; 
         }
 
         /* Form & Input Styles */
-        input, select {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 1px solid #ccc; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
             transition: border-color 0.3s;
         }
         input:focus, select:focus {
@@ -70,27 +70,27 @@
             outline: none;
             box-shadow: 0 0 5px rgba(30, 136, 229, 0.3);
         }
-
+        
         /* Button Styles */
-        button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 15px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 1rem;
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 15px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 1rem; 
             transition: background-color 0.2s, transform 0.1s;
         }
         button:active {
             transform: scale(0.99);
         }
-
+        
         /* Button Colors */
         .btn-primary { background-color: #4CAF50; color: white; }
         .btn-primary:hover { background-color: #43a047; }
-
+        
         .btn-blue { background-color: #2196F3; color: white; }
         .btn-blue:hover { background-color: #1e88e5; }
 
@@ -156,13 +156,13 @@
         <label>Select User Role:</label>
         <select id="login-type">
             <option value="admin">Admin</option>
-            <option value="producer">Producer (Farmer)</option>
+            <option value="farmer">Farmer</option>
             <option value="transporter">Transporter</option>
             <option value="distributor">Distributor</option>
-            <option value="retailer">Retailer (Shop)</option>
+            <option value="retailer">Retailer</option>
             <option value="customer">Customer</option>
         </select>
-
+        
         <div id="password-field">
             <input type="password" id="login-pass" placeholder="Password (Demo: 123)">
         </div>
@@ -174,7 +174,7 @@
         <h3>Admin Panel: Actor Registration</h3>
         <input type="text" id="admin-addr" placeholder="New Wallet Address (0x...)">
         <select id="admin-role">
-            <option value="producer">Producer</option>
+            <option value="farmer">Farmer</option>
             <option value="transporter">Transporter</option>
             <option value="distributor">Distributor</option>
             <option value="retailer">Retailer</option>
@@ -182,18 +182,18 @@
         <button class="btn-primary" onclick="registerActor()">Register Actor</button>
     </div>
 
-    <div id="producer-panel" class="panel">
-        <h3>Producer Panel: Batch Creation</h3>
-        <input type="number" id="prod-id" placeholder="Batch ID (e.g., 101)">
-        <input type="text" id="prod-name" placeholder="Product Name (e.g., Tomatoes)">
-        <input type="number" id="prod-qty" placeholder="Quantity (kg)">
+    <div id="farmer-panel" class="panel">
+        <h3>Farmer Panel: Batch Creation</h3>
+        <input type="number" id="farm-id" placeholder="Batch ID (e.g., 101)">
+        <input type="text" id="farm-name" placeholder="Product Name (e.g., Tomatoes)">
+        <input type="number" id="farm-qty" placeholder="Quantity (kg)">
         <button class="btn-primary" onclick="createBatch()">Create Batch</button>
-
+        
         <hr>
         <h4>Transfer Ownership</h4>
-        <input type="number" id="prod-transfer-id" placeholder="Batch ID">
-        <input type="text" id="prod-new-owner" placeholder="Next Owner Address (0x...)">
-        <button class="btn-blue" onclick="transferOwnership('prod')">Transfer</button>
+        <input type="number" id="farm-transfer-id" placeholder="Batch ID">
+        <input type="text" id="farm-new-owner" placeholder="Next Owner Address (0x...)">
+        <button class="btn-blue" onclick="transferOwnership('farm')">Transfer</button>
     </div>
 
     <div id="transporter-panel" class="panel">
@@ -201,7 +201,7 @@
         <input type="number" id="trans-id" placeholder="Batch ID">
         <input type="number" id="trans-temp" placeholder="Temperature (-10 to 40)">
         <input type="number" id="trans-humid" placeholder="Humidity (0 to 40)">
-        <input type="text" id="trans-loc" placeholder="Location (e.g., London)">
+        <input type="text" id="trans-loc" placeholder="Location (e.g., Bursa)">
         <button class="btn-primary" onclick="addSensorData()">Record Data</button>
 
         <hr>
@@ -229,7 +229,7 @@
 
     <div id="customer-panel" class="panel">
         <h3>Customer Traceability</h3>
-
+        
         <div class="qr-output-area">
             <h4>Scan Simulation QR Code</h4>
             <div id="qr-placeholder" class="qr-placeholder">
@@ -239,7 +239,7 @@
 
         <input type="number" id="cust-id" placeholder="Enter Batch ID" oninput="generateQrCode()">
         <button class="btn-primary" onclick="getBatchHistory()">Search History</button>
-
+        
         <div id="history-result" style="margin-top: 25px;"></div>
     </div>
 
@@ -253,517 +253,516 @@
 </div>
 
 <script>
-    // --- CONFIGURATION ---
-    // --- CONFIGURATION ---
-    const CONTRACT_ADDRESS = "0xFdF50be72B1c4bACE277bF06964D588206fcbC4e";
+    const CONTRACT_ADDRESS = "0xcc35EFB8a97A26b2a740B45F1F568712b7fE59C7"; 
+    
+    const ABI =[
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_batchId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "int256",
+				"name": "_temperature",
+				"type": "int256"
+			},
+			{
+				"internalType": "int256",
+				"name": "_humidity",
+				"type": "int256"
+			},
+			{
+				"internalType": "string",
+				"name": "_location",
+				"type": "string"
+			}
+		],
+		"name": "addSensorData",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "batchId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "passedInspection",
+				"type": "bool"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "retailer",
+				"type": "address"
+			}
+		],
+		"name": "BatchArrived",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "batchId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "productName",
+				"type": "string"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "farmer",
+				"type": "address"
+			}
+		],
+		"name": "BatchCreated",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_batchId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_productName",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_quantity",
+				"type": "uint256"
+			}
+		],
+		"name": "createBatch",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_batchId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "_passedInspection",
+				"type": "bool"
+			}
+		],
+		"name": "markAsArrived",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "batchId",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "previousOwner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "OwnershipTransferred",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_distributor",
+				"type": "address"
+			}
+		],
+		"name": "registerDistributor",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_farmer",
+				"type": "address"
+			}
+		],
+		"name": "registerFarmer",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_retailer",
+				"type": "address"
+			}
+		],
+		"name": "registerRetailer",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_transporter",
+				"type": "address"
+			}
+		],
+		"name": "registerTransporter",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "batchId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "int256",
+				"name": "temperature",
+				"type": "int256"
+			},
+			{
+				"indexed": false,
+				"internalType": "int256",
+				"name": "humidity",
+				"type": "int256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "location",
+				"type": "string"
+			}
+		],
+		"name": "SensorDataAdded",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_batchId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "_newOwner",
+				"type": "address"
+			}
+		],
+		"name": "transferOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "batches",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "batchId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "productName",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "quantity",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "currentOwner",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "farmer",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "isArrived",
+				"type": "bool"
+			},
+			{
+				"internalType": "bool",
+				"name": "passedInspection",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "batchExists",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "distributors",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "farmers",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_batchId",
+				"type": "uint256"
+			}
+		],
+		"name": "getBatchHistory",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "productName",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "quantity",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "farmer",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "currentOwner",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "isArrived",
+				"type": "bool"
+			},
+			{
+				"internalType": "bool",
+				"name": "passedInspection",
+				"type": "bool"
+			},
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "timestamp",
+						"type": "uint256"
+					},
+					{
+						"internalType": "int256",
+						"name": "temperature",
+						"type": "int256"
+					},
+					{
+						"internalType": "int256",
+						"name": "humidity",
+						"type": "int256"
+					},
+					{
+						"internalType": "string",
+						"name": "location",
+						"type": "string"
+					},
+					{
+						"internalType": "address",
+						"name": "recordedBy",
+						"type": "address"
+					}
+				],
+				"internalType": "struct FreshChain.SensorLog[]",
+				"name": "logs",
+				"type": "tuple[]"
+			},
+			{
+				"internalType": "address[]",
+				"name": "owners",
+				"type": "address[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "retailers",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "transporters",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
 
-    // ABI (Smart Contract Interface)
-    const ABI = [
-        {
-            "inputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "_batchId",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "int256",
-                    "name": "_temperature",
-                    "type": "int256"
-                },
-                {
-                    "internalType": "int256",
-                    "name": "_humidity",
-                    "type": "int256"
-                },
-                {
-                    "internalType": "string",
-                    "name": "_location",
-                    "type": "string"
-                }
-            ],
-            "name": "addSensorData",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [],
-            "stateMutability": "nonpayable",
-            "type": "constructor"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": true,
-                    "internalType": "uint256",
-                    "name": "batchId",
-                    "type": "uint256"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "bool",
-                    "name": "passedInspection",
-                    "type": "bool"
-                },
-                {
-                    "indexed": true,
-                    "internalType": "address",
-                    "name": "retailer",
-                    "type": "address"
-                }
-            ],
-            "name": "BatchArrived",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": true,
-                    "internalType": "uint256",
-                    "name": "batchId",
-                    "type": "uint256"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "string",
-                    "name": "productName",
-                    "type": "string"
-                },
-                {
-                    "indexed": true,
-                    "internalType": "address",
-                    "name": "producer",
-                    "type": "address"
-                }
-            ],
-            "name": "BatchCreated",
-            "type": "event"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "_batchId",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "string",
-                    "name": "_productName",
-                    "type": "string"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "_quantity",
-                    "type": "uint256"
-                }
-            ],
-            "name": "createBatch",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "_batchId",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "bool",
-                    "name": "_passedInspection",
-                    "type": "bool"
-                }
-            ],
-            "name": "markAsArrived",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": true,
-                    "internalType": "uint256",
-                    "name": "batchId",
-                    "type": "uint256"
-                },
-                {
-                    "indexed": true,
-                    "internalType": "address",
-                    "name": "previousOwner",
-                    "type": "address"
-                },
-                {
-                    "indexed": true,
-                    "internalType": "address",
-                    "name": "newOwner",
-                    "type": "address"
-                }
-            ],
-            "name": "OwnershipTransferred",
-            "type": "event"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "_distributor",
-                    "type": "address"
-                }
-            ],
-            "name": "registerDistributor",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "_producer",
-                    "type": "address"
-                }
-            ],
-            "name": "registerProducer",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "_retailer",
-                    "type": "address"
-                }
-            ],
-            "name": "registerRetailer",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "_transporter",
-                    "type": "address"
-                }
-            ],
-            "name": "registerTransporter",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": true,
-                    "internalType": "uint256",
-                    "name": "batchId",
-                    "type": "uint256"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "int256",
-                    "name": "temperature",
-                    "type": "int256"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "int256",
-                    "name": "humidity",
-                    "type": "int256"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "string",
-                    "name": "location",
-                    "type": "string"
-                }
-            ],
-            "name": "SensorDataAdded",
-            "type": "event"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "_batchId",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "address",
-                    "name": "_newOwner",
-                    "type": "address"
-                }
-            ],
-            "name": "transferOwnership",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "",
-                    "type": "uint256"
-                }
-            ],
-            "name": "batches",
-            "outputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "batchId",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "string",
-                    "name": "productName",
-                    "type": "string"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "quantity",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "address",
-                    "name": "currentOwner",
-                    "type": "address"
-                },
-                {
-                    "internalType": "address",
-                    "name": "producer",
-                    "type": "address"
-                },
-                {
-                    "internalType": "bool",
-                    "name": "isArrived",
-                    "type": "bool"
-                },
-                {
-                    "internalType": "bool",
-                    "name": "passedInspection",
-                    "type": "bool"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "",
-                    "type": "uint256"
-                }
-            ],
-            "name": "batchExists",
-            "outputs": [
-                {
-                    "internalType": "bool",
-                    "name": "",
-                    "type": "bool"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "",
-                    "type": "address"
-                }
-            ],
-            "name": "distributors",
-            "outputs": [
-                {
-                    "internalType": "bool",
-                    "name": "",
-                    "type": "bool"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "_batchId",
-                    "type": "uint256"
-                }
-            ],
-            "name": "getBatchHistory",
-            "outputs": [
-                {
-                    "internalType": "string",
-                    "name": "productName",
-                    "type": "string"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "quantity",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "address",
-                    "name": "producer",
-                    "type": "address"
-                },
-                {
-                    "internalType": "address",
-                    "name": "currentOwner",
-                    "type": "address"
-                },
-                {
-                    "internalType": "bool",
-                    "name": "isArrived",
-                    "type": "bool"
-                },
-                {
-                    "internalType": "bool",
-                    "name": "passedInspection",
-                    "type": "bool"
-                },
-                {
-                    "components": [
-                        {
-                            "internalType": "uint256",
-                            "name": "timestamp",
-                            "type": "uint256"
-                        },
-                        {
-                            "internalType": "int256",
-                            "name": "temperature",
-                            "type": "int256"
-                        },
-                        {
-                            "internalType": "int256",
-                            "name": "humidity",
-                            "type": "int256"
-                        },
-                        {
-                            "internalType": "string",
-                            "name": "location",
-                            "type": "string"
-                        },
-                        {
-                            "internalType": "address",
-                            "name": "recordedBy",
-                            "type": "address"
-                        }
-                    ],
-                    "internalType": "struct FreshChain.SensorLog[]",
-                    "name": "logs",
-                    "type": "tuple[]"
-                },
-                {
-                    "internalType": "address[]",
-                    "name": "owners",
-                    "type": "address[]"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [],
-            "name": "owner",
-            "outputs": [
-                {
-                    "internalType": "address",
-                    "name": "",
-                    "type": "address"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "",
-                    "type": "address"
-                }
-            ],
-            "name": "producers",
-            "outputs": [
-                {
-                    "internalType": "bool",
-                    "name": "",
-                    "type": "bool"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "",
-                    "type": "address"
-                }
-            ],
-            "name": "retailers",
-            "outputs": [
-                {
-                    "internalType": "bool",
-                    "name": "",
-                    "type": "bool"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "",
-                    "type": "address"
-                }
-            ],
-            "name": "transporters",
-            "outputs": [
-                {
-                    "internalType": "bool",
-                    "name": "",
-                    "type": "bool"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        }
-    ];
-
-    // Variables
     let provider, signer, contract;
     let connectedAddress = "";
 
-    // Dynamic QR Code Generation
+    function getBatchIdFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('batchid'); 
+    }
+
     function generateQrCode() {
         const batchId = document.getElementById('cust-id').value;
         const qrContainer = document.getElementById('qr-placeholder');
-
-        qrContainer.innerHTML = '';
+        
+        qrContainer.innerHTML = ''; 
 
         if (batchId && batchId.length > 0) {
-            // Data embedded in QR: Current URL + ?batchid=ID
             const dataToEmbed = window.location.href.split('?')[0] + "?batchid=" + batchId;
-
+            
             const canvas = document.createElement('canvas');
             qrContainer.appendChild(canvas);
 
@@ -773,19 +772,12 @@
                 size: 150,
                 padding: 10
             });
-
+            
         } else {
             qrContainer.innerHTML = 'Enter Batch ID...';
         }
     }
 
-    // URL Parameter Reading (QR Scan Simulation)
-    function getBatchIdFromUrl() {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('batchid');
-    }
-
-    // Handles redirection if a QR code link is opened
     function handleQrCodeScanRedirect() {
         const batchId = getBatchIdFromUrl();
         if (batchId) {
@@ -794,26 +786,24 @@
 
             const custIdInput = document.getElementById('cust-id');
             if(custIdInput) custIdInput.value = batchId;
-
-            // Generate QR code based on the scanned ID and immediately query the data
+            
             generateQrCode();
             setTimeout(() => {
                 getBatchHistory();
-            }, 500);
+            }, 500); 
 
             document.getElementById("logout-section").style.display = "block";
             return true;
         }
         return false;
     }
-
+    
     document.addEventListener('DOMContentLoaded', () => {
         if (!handleQrCodeScanRedirect()) {
             document.getElementById("connect-section").style.display = "block";
         }
     });
 
-    // 1. CONNECT WALLET FUNCTION
     async function connectWallet() {
         if (window.ethereum) {
             try {
@@ -839,13 +829,11 @@
         }
     }
 
-    // --- OTHER UI FUNCTIONS ---
-
     function showPanel(panelId) {
         document.querySelectorAll('.panel').forEach(el => el.classList.remove('active-panel'));
         const p = document.getElementById(panelId);
         if(p) p.classList.add('active-panel');
-
+        
         document.getElementById("status-msg").style.display = "none";
         document.getElementById("error-msg").style.display = "none";
     }
@@ -861,7 +849,7 @@
         }
 
         if (pass === "123") {
-            showPanel(type + "-panel");
+            showPanel(type + "-panel"); 
             document.getElementById("logout-section").style.display = "block";
         } else {
             alert("Incorrect Password!");
@@ -869,7 +857,6 @@
     }
 
     function logout() {
-        // Reloads the page without the batchid parameter
         const cleanUrl = window.location.href.split('?')[0];
         window.location.href = cleanUrl;
     }
@@ -894,15 +881,15 @@
         if(!contract) return showError("Please connect your wallet first.");
         const addr = document.getElementById("admin-addr").value;
         const role = document.getElementById("admin-role").value;
-
+        
         try {
             showStatus("Waiting for confirmation...");
             let tx;
-            if(role === "producer") tx = await contract.registerProducer(addr);
+            if(role === "farmer") tx = await contract.registerFarmer(addr);
             else if(role === "transporter") tx = await contract.registerTransporter(addr);
             else if(role === "distributor") tx = await contract.registerDistributor(addr);
             else if(role === "retailer") tx = await contract.registerRetailer(addr);
-
+            
             await tx.wait();
             showStatus("Success! " + addr.substring(0, 6) + "... registered as " + role);
         } catch (err) {
@@ -912,9 +899,9 @@
 
     async function createBatch() {
         if(!contract) return showError("Please connect your wallet first.");
-        const id = document.getElementById("prod-id").value;
-        const name = document.getElementById("prod-name").value;
-        const qty = document.getElementById("prod-qty").value;
+        const id = document.getElementById("farm-id").value;
+        const name = document.getElementById("farm-name").value;
+        const qty = document.getElementById("farm-qty").value;
 
         try {
             showStatus("Creating Batch...");
@@ -987,18 +974,18 @@
                 return;
             }
         }
-
+        
         // Use a read-only contract instance
         const readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-
+        
         try {
             const data = await readOnlyContract.getBatchHistory(id);
-
+            
             let html = `
                 <div class="history-summary">
                     <p><strong>Product:</strong> ${data[0]}</p>
                     <p><strong>Quantity:</strong> ${data[1]} kg</p>
-                    <p><strong>Producer:</strong> ${data[2].substring(0, 6)}...</p>
+                    <p><strong>Farmer:</strong> ${data[2].substring(0, 6)}...</p>
                     <p><strong>Status:</strong> ${data[4] ? (data[5] ? "✅ Inspection PASSED" : "❌ Inspection FAILED") : "🚚 In Transit"}</p>
                 </div>
                 <h4 style="text-align:left;">Sensor History:</h4>
