@@ -833,17 +833,25 @@ async function connectWallet() {
     }
 
     try {
-        const provider = new ethers.BrowserProvider(window.ethereum);
+        provider = new ethers.BrowserProvider(window.ethereum);
         await provider.send("eth_requestAccounts", []);
         signer = await provider.getSigner();
 
-        // 🔽 CONNECT ekranını kapat
+        // 🔥 CONTRACT BURADA OLUŞUYOR
+        contract = new ethers.Contract(
+            CONTRACT_ADDRESS,
+            ABI,
+            signer
+        );
+
+        connectedAddress = await signer.getAddress();
+
+        document.getElementById("wallet-display").innerText =
+            "Connected Wallet: " + connectedAddress.substring(0, 6) + "...";
+        document.getElementById("wallet-display").style.display = "block";
+
         document.getElementById("connect-section").style.display = "none";
-
-        // 🔽 LOGIN PANELİNİ AÇ
         showPanel("login-panel");
-
-        // 🔽 LOGOUT GÖRÜNSÜN
         document.getElementById("logout-section").style.display = "block";
 
     } catch (err) {
