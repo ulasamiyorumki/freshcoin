@@ -961,54 +961,75 @@
         }
     }
 
-    async function getBatchHistory() {
-        const id = document.getElementById("cust-id").value;
-        const displayDiv = document.getElementById("history-result");
-        displayDiv.innerHTML = "Loading...";
+async function getBatchHistory() {
+    const id = document.getElementById("cust-id").value;
+    const displayDiv = document.getElementById("history-result");
+    displayDiv.innerHTML = "Loading...";
 
+    try {
+        // 🔹 WALLET → FALLBACK MANTIĞI
         if (!provider) {
             if (window.ethereum) {
-                provider = new ethers.BrowserProvider(window.ethereum);
+                try {
+                    provider = new ethers.BrowserProvider(window.ethereum);
+                    await provider.send("eth_accounts", []); // erişim testi
+                    console.log("Wallet provider kullanılıyor");
+                } catch (e) {
+                    console.warn("Wallet erişilemedi, read-only moda geçildi");
+                    provider = new ethers.JsonRpcProvider("https://rpc.sepolia.org");
+                }
             } else {
-                displayDiv.innerHTML = "<p style='color:red'>Could not initialize Ethers.js for reading data.</p>";
-                return;
+                // 🔹 Safari / QR / Wallet yok
+                provider = new ethers.JsonRpcProvider("https://rpc.sepolia.org");
+                console.log("Read-only provider kullanılıyor");
             }
         }
-        
-        // Use a read-only contract instance
-        const readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-        
-        try {
-            const data = await readOnlyContract.getBatchHistory(id);
-            
-            let html = `
-                <div class="history-summary">
-                    <p><strong>Product:</strong> ${data[0]}</p>
-                    <p><strong>Quantity:</strong> ${data[1]} kg</p>
-                    <p><strong>Farmer:</strong> ${data[2].substring(0, 6)}...</p>
-                    <p><strong>Status:</strong> ${data[4] ? (data[5] ? "✅ Inspection PASSED" : "❌ Inspection FAILED") : "🚚 In Transit"}</p>
-                </div>
-                <h4 style="text-align:left;">Sensor History:</h4>
-            `;
 
-            if(data[6].length === 0) {
-                html += "<p>No sensor data recorded yet.</p>";
-            } else {
-                data[6].forEach(log => {
-                    html += `
-                        <div class="history-item">
-                            <strong>${log.location}</strong> (${new Date(Number(log.timestamp) * 1000).toLocaleDateString()} ${new Date(Number(log.timestamp) * 1000).toLocaleTimeString()})<br>
-                            Temp: ${log.temperature}°C | Humidity: ${log.humidity}%
-                        </div>
-                    `;
-                });
-            }
-            displayDiv.innerHTML = html;
-        } catch (err) {
-            console.error(err);
-            displayDiv.innerHTML = "<p style='color:red'>Batch not found or error fetching data.</p>";
+        const readOnlyContract = new ethers.Contract(
+            CONTRACT_ADDRESS,
+            ABI,
+            provider
+        );
+
+        const data = await readOnlyContract.getBatchHistory(id);
+
+        let html = `
+            <div class="history-summary">
+                <p><strong>Product:</strong> ${data[0]}</p>
+                <p><strong>Quantity:</strong> ${data[1]} kg</p>
+                <p><strong>Farmer:</strong> ${data[2].substring(0, 6)}...</p>
+                <p><strong>Status:</strong>
+                    ${data[4]
+                        ? (data[5] ? "✅ Inspection PASSED" : "❌ Inspection FAILED")
+                        : "🚚 In Transit"}
+                </p>
+            </div>
+            <h4 style="text-align:left;">Sensor History:</h4>
+        `;
+
+        if (data[6].length === 0) {
+            html += "<p>No sensor data recorded yet.</p>";
+        } else {
+            data[6].forEach(log => {
+                html += `
+                    <div class="history-item">
+                        <strong>${log.location}</strong><br>
+                        ${new Date(Number(log.timestamp) * 1000).toLocaleString()}<br>
+                        🌡 ${log.temperature}°C | 💧 ${log.humidity}%
+                    </div>
+                `;
+            });
         }
+
+        displayDiv.innerHTML = html;
+
+    } catch (err) {
+        console.error(err);
+        displayDiv.innerHTML =
+            "<p style='color:red'>Batch not found or error fetching data.</p>";
     }
+}
+
 
 </script>
 
