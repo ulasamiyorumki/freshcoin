@@ -6,6 +6,7 @@
     <title>FreshChain Dashboard | Dynamic QR</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+	
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
@@ -748,6 +749,10 @@
 
     let provider, signer, contract;
     let connectedAddress = "";
+	const READ_ONLY_RPC = "https://sepolia.publicnode.com";
+	let readOnlyProvider = null;
+
+
 
     function getBatchIdFromUrl() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -967,28 +972,36 @@ async function getBatchHistory() {
     displayDiv.innerHTML = "Loading...";
 
     try {
-        // 🔹 WALLET → FALLBACK MANTIĞI
-        if (!provider) {
-            if (window.ethereum) {
-                try {
-                    provider = new ethers.BrowserProvider(window.ethereum);
-                    await provider.send("eth_accounts", []); // erişim testi
+        let usedProvider;
+
+        // 1️⃣ Wallet varsa ve bağlıysa → onu kullan
+        if (window.ethereum) {
+            try {
+                const tempProvider = new ethers.BrowserProvider(window.ethereum);
+                const accounts = await tempProvider.listAccounts();
+
+                if (accounts.length > 0) {
                     console.log("Wallet provider kullanılıyor");
-                } catch (e) {
-                    console.warn("Wallet erişilemedi, read-only moda geçildi");
-                    provider = new ethers.JsonRpcProvider("https://rpc.sepolia.org");
+                    usedProvider = tempProvider;
                 }
-            } else {
-                // 🔹 Safari / QR / Wallet yok
-                provider = new ethers.JsonRpcProvider("https://rpc.sepolia.org");
-                console.log("Read-only provider kullanılıyor");
+            } catch (e) {
+                console.warn("Wallet erişimi başarısız");
             }
+        }
+
+        // 2️⃣ Wallet yoksa → read-only RPC
+        if (!usedProvider) {
+            if (!readOnlyProvider) {
+                console.log("Read-only provider kullanılıyor");
+                readOnlyProvider = new ethers.JsonRpcProvider(READ_ONLY_RPC);
+            }
+            usedProvider = readOnlyProvider;
         }
 
         const readOnlyContract = new ethers.Contract(
             CONTRACT_ADDRESS,
             ABI,
-            provider
+            usedProvider
         );
 
         const data = await readOnlyContract.getBatchHistory(id);
@@ -1026,9 +1039,10 @@ async function getBatchHistory() {
     } catch (err) {
         console.error(err);
         displayDiv.innerHTML =
-            "<p style='color:red'>Batch not found or error fetching data.</p>";
+            "<p style='color:red'>Batch not found or RPC error.</p>";
     }
 }
+
 
 
 </script>
