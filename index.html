@@ -145,10 +145,20 @@
 <div class="container">
     <h1>FreshChain Traceability System</h1>
 
-    <div id="connect-section" style="text-align: center; padding: 30px 10px;">
-        <p style="color:#666; margin-bottom: 25px;">Please connect your wallet to access the system.</p>
-        <button class="btn-blue" onclick="connectWallet()">Connect Wallet</button>
-    </div>
+<div id="connect-section" style="text-align: center; padding: 30px 10px;">
+    <p style="color:#666; margin-bottom: 25px;">
+        Connect your wallet or continue as a customer.
+    </p>
+
+    <button class="btn-blue" onclick="connectWallet()">
+        🔐 Connect Wallet
+    </button>
+
+    <button class="btn-primary" style="margin-top:15px" onclick="loginAsCustomer()">
+        👁 Login as customer to view batch history
+    </button>
+</div>
+
 
     <div id="wallet-display" class="wallet-info"></div>
 
@@ -1041,6 +1051,17 @@ async function getBatchHistory() {
         displayDiv.innerHTML =
             "<p style='color:red'>Batch not found or RPC error.</p>";
     }
+}
+
+	function loginAsCustomer() {
+    // Connect ekranını kapat
+    document.getElementById("connect-section").style.display = "none";
+
+    // Customer panelini aç
+    showPanel("customer-panel");
+
+    // Logout butonunu göster
+    document.getElementById("logout-section").style.display = "block";
 }
 
 
