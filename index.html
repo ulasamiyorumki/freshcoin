@@ -818,31 +818,35 @@ const READ_ONLY_RPC = "https://eth-sepolia.g.alchemy.com/v2/39IBa_DKcnflFjkW1tP2
             document.getElementById("connect-section").style.display = "block";
         }
     });
+async function connectWallet() {
 
-    async function connectWallet() {
-        if (window.ethereum) {
-            try {
-                provider = new ethers.BrowserProvider(window.ethereum);
-                await provider.send("eth_requestAccounts", []);
-                signer = await provider.getSigner();
-                contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-                connectedAddress = await signer.getAddress();
+    // iOS + Safari tespiti
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-                document.getElementById("connect-section").style.display = "none";
-                const walletDisplay = document.getElementById("wallet-display");
-                walletDisplay.innerText = "🟢 Connected Wallet: " + connectedAddress.substring(0, 6) + "..." + connectedAddress.slice(-4);
-                walletDisplay.style.display = "block";
-
-                showPanel("login-panel");
-
-            } catch (error) {
-                console.error(error);
-                alert("Connection rejected or error occurred.");
-            }
-        } else {
-            alert("Please install MetaMask!");
-        }
+    if (isIOS && !window.ethereum) {
+        alert(
+			"You should open this website from MetaMask App Browser"
+        );
+        return;
     }
+
+    if (!window.ethereum) {
+        alert("Please install MetaMask!");
+        return;
+    }
+
+    try {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        signer = await provider.getSigner();
+
+        document.getElementById("connect-section").style.display = "none";
+        document.getElementById("app-section").style.display = "block";
+
+    } catch (err) {
+        console.error(err);
+    }
+}
 
     function showPanel(panelId) {
         document.querySelectorAll('.panel').forEach(el => el.classList.remove('active-panel'));
