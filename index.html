@@ -820,13 +820,10 @@ const READ_ONLY_RPC = "https://eth-sepolia.g.alchemy.com/v2/39IBa_DKcnflFjkW1tP2
     });
 async function connectWallet() {
 
-    // iOS + Safari tespiti
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
     if (isIOS && !window.ethereum) {
-        alert(
-			"You should open this website from MetaMask App Browser"
-        );
+        alert("You should open this website from MetaMask App Browser");
         return;
     }
 
@@ -840,13 +837,21 @@ async function connectWallet() {
         await provider.send("eth_requestAccounts", []);
         signer = await provider.getSigner();
 
+        // 🔽 CONNECT ekranını kapat
         document.getElementById("connect-section").style.display = "none";
-        document.getElementById("app-section").style.display = "block";
+
+        // 🔽 LOGIN PANELİNİ AÇ
+        showPanel("login-panel");
+
+        // 🔽 LOGOUT GÖRÜNSÜN
+        document.getElementById("logout-section").style.display = "block";
 
     } catch (err) {
         console.error(err);
+        alert("Wallet connection failed");
     }
 }
+
 
     function showPanel(panelId) {
         document.querySelectorAll('.panel').forEach(el => el.classList.remove('active-panel'));
